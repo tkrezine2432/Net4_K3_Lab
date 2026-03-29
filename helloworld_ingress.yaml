@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    field.cattle.io/publicEndpoints: '[{"addresses":
+["192.168.1.51","192.168.1.52","192.168.1.53"],"port":80,"protocol":"HTTP","ServiceName":"default:hello-nodeport","igressName":"default:helloweb","hostname":"ilovecows.com","path":"/","allNodes":fal
+se}]'
+  generation: 2
+  managedFields:
+  name: helloweb
+  namespace: default
+spec:
+  rules:
+  - host: ilovecows.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: hello-nodeport
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+status:
