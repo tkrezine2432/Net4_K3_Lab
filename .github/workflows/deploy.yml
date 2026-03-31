@@ -1,0 +1,30 @@
+name: Deploy to K3s Cluster
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Apply manifests to cluster
+        run: |
+          kubectl apply -f webserver.yaml
+          kubectl apply -f webserver_nodeport.yaml
+          kubectl apply -f helloworld.yaml
+          kubectl apply -f helloworld_nodeport.yaml
+          kubectl apply -f helloworld_ingress.yaml
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/hello-world --timeout=120s
+          kubectl rollout status deployment/nginx --timeout=120s
+
+      - name: Show running pods
+        run: kubectl get pods -o wide
