@@ -4,7 +4,7 @@ metadata:
   name: nginx
   namespace: default
 spec:
-  replicas: 2
+  replicas: 7
   selector:
     matchLabels:
       app: nginx
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:stable
+          image: tkrezine2432/piweb:latest
           imagePullPolicy: Always
           ports:
           - containerPort: 80
