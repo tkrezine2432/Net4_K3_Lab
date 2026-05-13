@@ -1,17 +1,26 @@
 name: Deploy to K3s Cluster
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: self-hosted
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build container image
+        run: docker build -t tkrezine2432/piweb:latest .
+
+      - name: Push container image to Docker Hub
+        run: docker push tkrezine2432/piweb:latest
 
       - name: Apply manifests to cluster
         run: |
@@ -20,6 +29,9 @@ jobs:
           kubectl apply -f helloworld.yaml
           kubectl apply -f helloworld_nodeport.yaml
           kubectl apply -f helloworld_ingress.yaml
+
+      - name: Force deployment to pull new image
+        run: kubectl rollout restart deployment/nginx
 
       - name: Verify rollout
         run: |
