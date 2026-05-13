@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Networking 4 PiCube Cluster — Built by Troy Krezine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mstc-red: #7A0019;
+    --mstc-red-dark: #5C0013;
+    --text: #2A2A2A;
+    --text-muted: #6A6A6A;
+    --bg: #FAFAFA;
+    --panel: #FFFFFF;
+    --rule: #E5E5E5;
+    --accent-bg: #F5F0F1;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--mstc-red);
+    color: white;
+    padding: 2.5rem 1.5rem;
+    border-bottom: 4px solid var(--mstc-red-dark);
+  }
+
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header h1 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    font-size: 2rem;
+    letter-spacing: -0.01em;
+  }
+
+  header .byline {
+    margin: 0;
+    font-weight: 300;
+    opacity: 0.92;
+    font-size: 1.05rem;
+  }
+
+  header .school {
+    margin: 0.25rem 0 0 0;
+    font-weight: 300;
+    opacity: 0.85;
+    font-size: 0.95rem;
+  }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem 1.5rem;
+  }
+
+  section {
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    color: var(--mstc-red);
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--rule);
+  }
+
+  h3 {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 1.5rem 0 0.5rem 0;
+  }
+
+  p {
+    margin: 0 0 1rem 0;
+  }
+
+  .lede {
+    font-size: 1.1rem;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  pre.diagram {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--mstc-red);
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text);
+    border-radius: 2px;
+  }
+
+  .component {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 2px;
+  }
+
+  .component h3 {
+    margin-top: 0;
+    color: var(--mstc-red);
+  }
+
+  .component p:last-child {
+    margin-bottom: 0;
+  }
+
+  .specs {
+    background: var(--accent-bg);
+    border-left: 4px solid var(--mstc-red);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+  }
+
+  .specs strong {
+    color: var(--mstc-red);
+  }
+
+  footer {
+    background: var(--panel);
+    border-top: 1px solid var(--rule);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  footer .stack {
+    margin-bottom: 0.5rem;
+  }
+
+  footer .stack span {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    margin: 0.15rem;
+    background: var(--accent-bg);
+    color: var(--mstc-red);
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+    background: var(--accent-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 2px;
+    color: var(--mstc-red);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>Networking 4 PiCube Cluster</h1>
+    <p class="byline">Built by Troy Krezine</p>
+    <p class="school">Mid-State Technical College</p>
+  </div>
+</header>
+
+<main>
+
+  <section>
+    <p class="lede">
+      This page is being served by a three-node Raspberry Pi cluster running K3s — a lightweight Kubernetes distribution. The page itself lives inside a custom container image, replicated seven times across the cluster, and reachable from anywhere on the internet through dynamic DNS and a single port forward on a home router.
+    </p>
+    <p>
+      The point of the project is not the page. It is everything that has to be working correctly behind the page for you to be reading it.
+    </p>
+  </section>
+
+  <section>
+    <h2>Architecture</h2>
+    <p>The path a request takes from a visitor's browser to one of the running pods:</p>
+    <pre class="diagram">
+   Visitor's browser
+          │
+          │  https request to public hostname
+          ▼
+   DNS provider          ─── resolves hostname to home public IP
+          │
+          ▼
+   Home router (WAN)     ─── port 80 forwarded inward
+          │
+          ▼
+   Control plane node    ─── built-in ingress controller listens here
+          │
+          │  ingress rule matches hostname
+          ▼
+   Cluster service       ─── load-balances across pods
+          │
+          ▼
+   One of seven pods     ─── nginx serves the requested page
+          │
+          ▼
+   Response travels back the same path</pre>
+    <p>
+      Every layer in that path is doing a specific job. None of them know about the layers above or below. The system works because each layer has a well-defined contract with its neighbors.
+    </p>
+  </section>
+
+  <section>
+    <h2>The Components</h2>
+
+    <div class="component">
+      <h3>Raspberry Pi Cluster Hardware</h3>
+      <p>
+        Three Raspberry Pi 5 boards housed in a PiCube chassis with an integrated PoE switch. Each node is powered through Ethernet — no separate power supplies. The cluster connects to the local network through a single uplink from the internal switch.
+      </p>
+      <div class="specs">
+        <strong>3 nodes</strong> · K3s cluster · all three nodes run workloads
+      </div>
+    </div>
+
+    <div class="component">
+      <h3>The Custom Container</h3>
+      <p>
+        The page you're reading is not the default nginx welcome page. It is a custom container image, built from a Dockerfile written for this project.
+      </p>
+      <p>
+        Container images are layered. The Dockerfile for this project starts with the standard nginx image as its base — inheriting an entire pre-configured web server in a single line — and adds the HTML for this page as one small additional layer on top. The result is an image that is nginx plus a few hundred bytes of custom content.
+      </p>
+      <p>
+        This is a meaningful contrast with the earlier hello-world lab. In that lab, the cluster ran an image someone else had built and published; students could configure how it ran but could not change what it contained. Here, the image is owned and authored — the Dockerfile is in the project's version control, the build happens through an automated pipeline, and the image is published to a registry under the author's account.
+      </p>
+      <p>
+        The published image lives in a public container registry. The first time a node needs the image, it pulls a copy from the registry and caches it locally; from that point on, the pod runs from the local cache. The registry is the distribution mechanism, not a runtime dependency — pods do not phone home to the registry on every request.
+      </p>
+    </div>
+
+    <h3 style="margin-top: 2rem; color: var(--mstc-red); font-size: 1.2rem;">How the Container Was Built</h3>
+    <p>
+      The container build follows the standard pattern used in production environments. Each step exists for a reason; each step's output becomes the input to the next.
+    </p>
+
+    <div class="component">
+      <h3>1. A registry account was created</h3>
+      <p>
+        Container images need a place to live so that the cluster can pull them. A free account on a public container registry was created for this project. The account name becomes part of every image name published under it — the registry handle is the equivalent of a username on a code-hosting site.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>2. A Dockerfile was written</h3>
+      <p>
+        The Dockerfile is the recipe for the image. It declares what to start from (a specific version of the nginx image), describes the image's identity through metadata, and copies the HTML for this page into the place where nginx expects to serve files from. Each instruction in the Dockerfile produces a layer in the resulting image — the build engine reads them in order and stacks the result.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>3. The image was built</h3>
+      <p>
+        The build process reads the Dockerfile, pulls the base image if it's not already cached, and stacks the new layer on top. The resulting image is a sealed artifact: a known filesystem, a known startup command, behaves the same way every time it runs. The build was performed on one of the cluster nodes, but it could have been performed anywhere — the image is portable across machines and architectures.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>4. The image was pushed to the registry</h3>
+      <p>
+        Pushing uploads the image to the registry account. Only the layers the registry doesn't already have get transferred — the base nginx layers, having been published by the nginx maintainers, are recognized and skipped. This is the efficiency that makes container distribution practical: shared foundations, minimal deltas.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>5. The deployment was updated to reference the new image</h3>
+      <p>
+        The Kubernetes deployment configuration was changed to point at the newly-built image instead of the generic nginx image used during earlier lab work. The replica count was raised from two to seven. With those edits applied, the cluster pulled the new image to each node and rolled the running pods over to the new version, one batch at a time, without taking the service offline.
+      </p>
+    </div>
+
+    <p style="margin-bottom: 2rem;">
+      The entire sequence — write, build, push, deploy — is the loop that every container-based service follows. Once it is understood once, it is understood for every image, every project, every team.
+    </p>
+
+    <div class="component">
+      <h3>Kubernetes Deployment with Seven Replicas</h3>
+      <p>
+        A Kubernetes Deployment object tells the cluster: "always keep seven copies of this container running, spread across the available nodes." If a pod dies, the cluster notices and starts a replacement. If a node fails, the pods that were running on it get rescheduled elsewhere.
+      </p>
+      <p>
+        Seven replicas means three nodes each carry a share of the load. Traffic to any one of them returns the same content. Refreshing this page hits different pods invisibly; the load is balanced by the cluster's networking layer.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>Service and Ingress Layer</h3>
+      <p>
+        Pods come and go — their IP addresses are not stable. A Kubernetes Service sits in front of the pods, presenting a stable address that load-balances incoming requests across whichever replicas are currently running.
+      </p>
+      <p>
+        An Ingress resource adds the next layer up: it routes incoming HTTP traffic based on hostname. When a request arrives at the cluster with this site's hostname in the HTTP <code>Host</code> header, the ingress controller knows to send it to this service rather than to any other.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>Public Reachability</h3>
+      <p>
+        Two pieces make the cluster reachable from outside the local network. A dynamic DNS service keeps a stable hostname pointing at the home's current public IP address, which can change over time. A single port forward on the home router sends inbound HTTP traffic to the cluster's control plane node, where the ingress controller picks it up.
+      </p>
+      <p>
+        No other ports are open. The exposure is minimal and intentional.
+      </p>
+    </div>
+
+  </section>
+
+  <section>
+    <h2>Engineering Decisions</h2>
+    <p>
+      The Dockerfile that built this image is short, but every line was a deliberate choice. The same image could have been built with a sloppier Dockerfile that would have worked but aged poorly. The choices below are what separate a hobby image from a production-grade one.
+    </p>
+
+    <div class="component">
+      <h3>Pinned base image version</h3>
+      <p>
+        The base image is declared with a specific version rather than a moving tag like <code>:stable</code> or <code>:latest</code>. Moving tags drift over time: building the same Dockerfile today and a year from now would produce different images, because <code>:stable</code> would point at something newer the second time. Pinning eliminates that drift. The Dockerfile becomes a reproducible recipe — the same inputs always produce the same image.
+      </p>
+      <p>
+        The trade-off is that security updates to the base image no longer arrive automatically. Bumping the version is a deliberate act, performed when the maintainer chooses to rebuild. In production environments, this is considered the safer behavior: nothing changes silently.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>Alpine base variant</h3>
+      <p>
+        The image is built on Alpine Linux rather than the default Debian base. Alpine is a small, security-focused Linux distribution; the Alpine variant of the nginx image is roughly an eighth the size of the Debian variant.
+      </p>
+      <p>
+        Smaller images push and pull faster, consume less disk on each cluster node, and start more quickly when a new pod is scheduled. The smaller base also presents a smaller surface for security vulnerabilities — fewer packages installed means fewer potential weaknesses to track and patch.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>OCI metadata labels</h3>
+      <p>
+        The Dockerfile attaches metadata to the image using the Open Container Initiative's standard label set: the title, description, authors, source repository, image URL, and license. These labels do not change how the image runs. They make the image self-documenting — anyone who finds the image can read its labels to learn what it is, who made it, where to find the code that built it, and where the image itself is published.
+      </p>
+      <p>
+        The labels are stored as part of the image's metadata and can be read with <code>docker inspect</code>. Filtering the output to just the labels section produces something like this:
+      </p>
+      <pre class="diagram">$ docker inspect tkrezine2432/piweb:latest --format '{{json .Config.Labels}}'
+
+{
+  "org.opencontainers.image.title": "Networking 4 PiCube Cluster Site",
+  "org.opencontainers.image.description": "Course project for MSTC Networking 4 — K3s deployment of a custom static site",
+  "org.opencontainers.image.authors": "Troy Krezine",
+  "org.opencontainers.image.source": "https://github.com/tkrezine2432/Net4_K3_Lab",
+  "org.opencontainers.image.url": "https://hub.docker.com/r/tkrezine2432/piweb",
+  "org.opencontainers.image.licenses": "MIT"
+}</pre>
+      <p>
+        In practice, this matters when an image appears somewhere unfamiliar — pulled from a registry by a teammate, found in a node's local image cache during troubleshooting, or referenced in an old deployment configuration with no surrounding context. The labels answer "what is this and who owns it" without needing to track down the original developer.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>Instruction ordering for build cache efficiency</h3>
+      <p>
+        Docker builds in order, and when an instruction changes, it invalidates the cache for that instruction and every instruction after it. The Dockerfile puts stable instructions first (the base image and metadata labels) and the volatile instruction last (the HTML copy). When the HTML changes, only the final layer is rebuilt — the base image and labels stay cached. This is a small optimization for a small project; in larger projects with package installations and dependency downloads, the same pattern can save significant build time on every change.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Automation: From Edit to Live</h2>
+    <p>
+      Building the image manually on a node is fine for the first time through. It is not how modern websites are actually maintained. Every meaningful change — a fixed typo, a new section, a redesign — would otherwise require the same sequence of build, push, and deploy commands, performed by hand, every time. That gets tedious and error-prone quickly.
+    </p>
+    <p>
+      The automation layer collapses that loop into a single action: commit a change.
+    </p>
+
+    <div class="component">
+      <h3>The source of truth</h3>
+      <p>
+        Every file that defines this project — the HTML, the Dockerfile, the Kubernetes configuration, and the workflow definition itself — lives in a public source code repository. The repository is the single source of truth. Whatever is in the repository, the running system reflects.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>The pipeline</h3>
+      <p>
+        A workflow file describes the automation. When a change is pushed to the repository, the workflow runs: it builds the container image from the current Dockerfile, pushes the new image to the registry, and instructs the cluster to roll out the updated version. The pipeline runs on a self-hosted runner installed on the cluster itself, which polls the repository for new work to do.
+      </p>
+    </div>
+
+    <div class="component">
+      <h3>The rollout</h3>
+      <p>
+        When the cluster receives the rollout instruction, it pulls the new image and replaces the running pods one batch at a time. New pods come up before old pods are terminated, so the service stays available throughout the update. A visitor refreshing the page during a rollout might briefly see the old version on one request and the new version on the next; within a minute or two, every pod is running the new image.
+      </p>
+    </div>
+
+    <h3 style="margin-top: 2rem; color: var(--mstc-red); font-size: 1.2rem;">The Modern Workflow</h3>
+    <p>
+      This loop — edit, commit, automated build, automated deploy — is the workflow that runs most of the modern web. The specifics vary across companies and tools, but the shape is universal:
+    </p>
+    <ol style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+      <li style="margin-bottom: 0.5rem;">Source code lives in version control.</li>
+      <li style="margin-bottom: 0.5rem;">Commits trigger an automated pipeline.</li>
+      <li style="margin-bottom: 0.5rem;">The pipeline builds, tests, and packages the change.</li>
+      <li style="margin-bottom: 0.5rem;">The pipeline deploys to a target environment.</li>
+      <li style="margin-bottom: 0.5rem;">The running system updates without manual intervention.</li>
+    </ol>
+    <p>
+      Large web companies run thousands of these pipelines per day across hundreds of services. A small project like this one runs the same pattern at a much smaller scale, but the principle is identical. Learning to set one up — even for a single static page on a home cluster — is learning the model that the industry runs on.
+    </p>
+  </section>
+
+  <section>
+    <h2>What This Demonstrates</h2>
+    <p>
+      The project sits at the intersection of several distinct skill areas: container image building, Kubernetes deployment, cluster networking, dynamic DNS, and home network configuration. Each piece is a small thing on its own. The work is in making all of them line up correctly, in the right order, with the right configurations.
+    </p>
+    <p>
+      It also demonstrates the underlying principle that makes modern infrastructure work: <em>declarative configuration</em>. Every layer of this system is defined in text files stored in version control. The cluster's job is to make reality match what the files describe. Change a file, commit it, and the cluster adjusts itself. The system is reproducible because the source of truth is the configuration, not the running state.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="stack">
+    <span>Raspberry Pi 5</span>
+    <span>K3s</span>
+    <span>Docker</span>
+    <span>nginx</span>
+    <span>Traefik</span>
+    <span>GitHub Actions</span>
+  </div>
+  <div>Built as the final project for Networking 4 · Mid-State Technical College</div>
+</footer>
+
+</body>
+</html>
